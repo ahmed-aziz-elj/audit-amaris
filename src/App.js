@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import imageAmaris from './assets/image-amaris.png';
 import imageBouyeges from './assets/image-bouygues.png';
-import { CheckCircle, User, Building, Settings, ArrowRight } from 'lucide-react';
+import { CheckCircle, User, Building, Settings, ArrowRight, ArrowLeft } from 'lucide-react';
 
 
 const AuditApp = () => {
@@ -113,30 +113,49 @@ const AuditApp = () => {
     setSelectedRow({ table: 'model', index: 0 });
     setSetupMode(false);
   };
+  const cancelStartAudit=()=>{
+    const newId = Math.max(...allAudits.map(a => a.id), 0) + 1;
+    setCurrentAuditId(newId);
+    setActiveTab('audits');
+    setViewMode('list');
+    setSelectedRow({ table: 'model', index: 0 });
+    setSetupMode(false);
+
+    };
   if (!loggedIn) {
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-blue-100">
-        <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-sm relative overflow-hidden">
+      return (
+  <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-full max-w-md">
+      
+      <div className="p-8">
+        {/* Top Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={imageAmaris} alt="Logo Amaris" className="h-16 object-contain" />
+        </div>
 
-          {/* Top Logo */}
-          <div className="flex justify-center mb-6">
-            <img src={imageAmaris} alt="Logo Amaris" className="h-14 object-contain" />
-          </div>
-
-          <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
             AMARIS-AuditApp
           </h2>
+          <p className="text-sm text-gray-500">Connectez-vous à votre compte</p>
+        </div>
 
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              setLoggedIn(true);
-            }}
-          >
-            <div className="mb-4">
-              <label className="block text-sm text-gray-700 mb-1">Login</label>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            setLoggedIn(true);
+          }}
+          className="space-y-6"
+        >
+          {/* Login Field */}
+          <div className="relative">
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+              <span className="w-4 h-4 mr-2 text-blue-600 font-bold">👤</span>
+              Login
+            </label>
+            <div className="relative">
               <input
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
                 type="text"
                 autoComplete="username"
                 value={loginData.login}
@@ -144,11 +163,24 @@ const AuditApp = () => {
                 placeholder="Nom d'utilisateur"
                 required
               />
+              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
+              {loginData.login && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <span className="text-green-500 text-lg">✓</span>
+                </div>
+              )}
             </div>
-            <div className="mb-6">
-              <label className="block text-sm text-gray-700 mb-1">Mot de passe</label>
+          </div>
+
+          {/* Password Field */}
+          <div className="relative">
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+              <span className="w-4 h-4 mr-2 text-blue-600 font-bold text-gray-400">🔒</span>
+              Mot de passe
+            </label>
+            <div className="relative">
               <input
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
                 type="password"
                 autoComplete="current-password"
                 value={loginData.password}
@@ -156,33 +188,45 @@ const AuditApp = () => {
                 placeholder="Mot de passe"
                 required
               />
+              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔒</span>
+              {loginData.password && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <span className="text-green-500 text-lg">✓</span>
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4">
             <button
-              className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition duration-200"
+              className="w-full flex items-center justify-center px-8 py-4 rounded-xl font-semibold transition-all duration-200 transform bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl"
               type="submit"
             >
               Se connecter
+              <span className="ml-2">→</span>
             </button>
-          </form>
-
-          {/* Bottom Logo */}
-          <div className="flex justify-center mt-8">
-            <img src={imageBouyeges} alt="Logo Bouygues" className="h-12 object-contain" />
           </div>
+        </form>
+
+        {/* Bottom Logo */}
+        <div className="flex justify-center mt-8 pt-6 border-t border-gray-100">
+          <img src={imageBouyeges} alt="Logo Bouygues" className="h-12 object-contain opacity-70" />
         </div>
       </div>
-
-    );
+    </div>
+  </div>
+);
 
   } else if (setupMode) {
       const isFormValid = setupData.type && setupData.department;
-      return (
+     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6 flex items-center justify-center">
       <div className="w-full max-w-2xl">
         {/* Header Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-4 shadow-lg">
-            <CheckCircle className="w-8 h-8 text-white" />
+            <span className="text-white text-2xl font-bold">✓</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Initialiser un Nouvel Audit
@@ -207,7 +251,7 @@ const AuditApp = () => {
               {/* Auditee Section */}
               <div className="relative">
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                  <User className="w-4 h-4 mr-2 text-blue-600" />
+                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold">👤</span>
                   Audité
                 </label>
                 <div className="relative">
@@ -219,9 +263,9 @@ const AuditApp = () => {
                   >
                     <option value="Ayoub BEN KHIROUN">Ayoub BEN KHIROUN</option>
                   </select>
-                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
                   <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-green-500 text-lg">✓</span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2 pl-12">Audité par défaut</p>
@@ -230,7 +274,7 @@ const AuditApp = () => {
               {/* Domain Section */}
               <div className="relative">
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                  <Building className="w-4 h-4 mr-2 text-blue-600" />
+                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold">🏢</span>
                   Domaine
                 </label>
                 <div className="relative">
@@ -244,10 +288,10 @@ const AuditApp = () => {
                       <option key={dom} value={dom}>{dom}</option>
                     ))}
                   </select>
-                  <Building className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🏢</span>
                   {setupData.type && (
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span className="text-green-500 text-lg">✓</span>
                     </div>
                   )}
                 </div>
@@ -261,7 +305,7 @@ const AuditApp = () => {
               {/* Department Section */}
               <div className="relative">
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                  <Settings className="w-4 h-4 mr-2 text-blue-600" />
+                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold">⚙️</span>
                   Processus
                 </label>
                 <div className="relative">
@@ -275,10 +319,10 @@ const AuditApp = () => {
                       <option key={dep} value={dep}>{dep}</option>
                     ))}
                   </select>
-                  <Settings className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">⚙️</span>
                   {setupData.department && (
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span className="text-green-500 text-lg">✓</span>
                     </div>
                   )}
                 </div>
@@ -296,7 +340,7 @@ const AuditApp = () => {
                 <div className="text-sm text-gray-500">
                   {isFormValid ? (
                     <span className="flex items-center text-green-600 font-medium">
-                      <CheckCircle className="w-4 h-4 mr-1" />
+                      <span className="mr-1">✓</span>
                       Prêt à continuer
                     </span>
                   ) : (
@@ -304,20 +348,30 @@ const AuditApp = () => {
                   )}
                 </div>
                 
-                <button
-                  disabled={!isFormValid}
-                  onClick={completeAuditSetup}
-                  className={`
-                    flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform
-                    ${isFormValid 
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }
-                  `}
+                <div className="flex items-center gap-4">
+                 <button
+                  onClick={cancelStartAudit}
+                  className="flex items-center px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg border border-gray-300"
                 >
+                <span className="mr-2">✕</span>
+                   Annuler
+                 </button>
+
+              <button
+              disabled={!isFormValid}
+              onClick={completeAuditSetup}
+              className={`
+              flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform
+              ${isFormValid 
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl' 
+               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+               }
+             `}
+            >
                   Continuer
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </button>
+                   <span className="ml-2">→</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -330,7 +384,7 @@ const AuditApp = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">Audité:</span>
-                <p className="font-medium text-gray-900">Ayoub BEN KHIROUN</p>
+                <p className="font-medium text-gray-900">{setupData.auditee}</p>
               </div>
               <div>
                 <span className="text-gray-600">Domaine:</span>
