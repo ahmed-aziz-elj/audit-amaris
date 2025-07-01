@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import imageAmaris from './assets/image-amaris.png';
 import imageBouyeges from './assets/image-bouygues.png';
-import { CheckCircle, User, Building, Settings, ArrowRight, ArrowLeft } from 'lucide-react';
+import lockIcon from './assets/lock.png';
 
 
 const AuditApp = () => {
@@ -112,6 +112,11 @@ const AuditApp = () => {
     setViewMode('editor');
     setSelectedRow({ table: 'model', index: 0 });
     setSetupMode(false);
+    setSetupData({
+    auditee: "Ayoub BEN KHIROUN",
+    type: "",
+    department: ""
+    });
   };
   const cancelStartAudit=()=>{
     const newId = Math.max(...allAudits.map(a => a.id), 0) + 1;
@@ -123,7 +128,7 @@ const AuditApp = () => {
 
     };
   if (!loggedIn) {
-      return (
+    return (
   <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-full max-w-md">
       
@@ -175,7 +180,7 @@ const AuditApp = () => {
           {/* Password Field */}
           <div className="relative">
             <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-              <span className="w-4 h-4 mr-2 text-blue-600 font-bold text-gray-400">🔒</span>
+              <img src={lockIcon} alt="Lock" className="w-4 h-4 mr-2 opacity-70" />
               Mot de passe
             </label>
             <div className="relative">
@@ -188,7 +193,8 @@ const AuditApp = () => {
                 placeholder="Mot de passe"
                 required
               />
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔒</span>
+              <img src={lockIcon} alt="Lock" className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-40" />
+
               {loginData.password && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                   <span className="text-green-500 text-lg">✓</span>

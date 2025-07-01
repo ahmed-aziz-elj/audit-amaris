@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ActionButtons = ({ goBackToList, printAudit, terminateAudit, deleteAudit }) => {
   return (
     <div className="bg-gray-100 px-5 py-2 flex justify-center gap-3 border-b border-gray-300">
