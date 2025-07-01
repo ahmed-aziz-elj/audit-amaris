@@ -2,6 +2,9 @@ import { useState } from 'react';
 import imageAmaris from './assets/image-amaris.png';
 import imageBouyeges from './assets/image-bouygues.png';
 import lockIcon from './assets/lock.png';
+import { CheckCircle, User, Building, Settings, ArrowRight, 
+  Calendar, Plus, FileText, ArrowLeft, Printer, Trash2, 
+  UserCheck, Gauge, BadgeInfo } from 'lucide-react';
 
 
 const AuditApp = () => {
@@ -21,7 +24,7 @@ const AuditApp = () => {
     {
       id: 1,
       title: 'AUDIT XXXXX',
-      auditor: 'MOHAMED ALI FRADI',
+      auditor: 'AHMED AZIZ ELJ',
       auditee: 'R&S PROJET X',
       date: '2025-06-15',
       status: 'En cours',
@@ -40,11 +43,9 @@ const AuditApp = () => {
           { no: 1, question: 'Mapping clair des erreurs attendues dans les connecteurs', response: 'OK', commentaire: 'Tous les documents sont à jour' },
           { no: 2, question: 'Tests de bout en bout', response: 'NOT OK', commentaire: 'Bien fait' },
           { no: 3, question: 'Intégration des formulaires de tâches utilisateur', response: 'OK', commentaire: '' },
-          { no: 4, question: 'Mise en place d’un système de retry dans les workers', response: 'NC', commentaire: 'Manque documentation' },
-          { no: 5, question: 'Vérification des timeouts et durées d’expiration des jobs', response: '', commentaire: '' },
-          { no: 5, question: 'Validation avec métier', response: 'OK', commentaire: '' }
-
-
+          { no: 4, question: 'Mise en place d\'un système de retry dans les workers', response: 'NC', commentaire: 'Manque documentation' },
+          { no: 5, question: 'Vérification des timeouts et durées d\'expiration des jobs', response: '', commentaire: '' },
+          { no: 6, question: 'Validation avec métier', response: 'OK', commentaire: '' }
         ],
     }
   ]);
@@ -79,7 +80,7 @@ const AuditApp = () => {
     const newAudit = {
       id: newId,
       title: `AUDIT ${String(newId).padStart(5, '0')}`,
-      auditor: 'MOHAMED ALI FRADI',
+      auditor: 'AHMED AZIZ ELJ',
       auditee: '',
       date: new Date().toISOString().split('T')[0],
       status: 'En cours',
@@ -98,11 +99,9 @@ const AuditApp = () => {
           { no: 1, question: 'Mapping clair des erreurs attendues dans les connecteurs', response: '', commentaire: '' },
           { no: 2, question: 'Tests de bout en bout', response: '', commentaire: '' },
           { no: 3, question: 'Intégration des formulaires de tâches utilisateur', response: '', commentaire: '' },
-          { no: 4, question: 'Mise en place d’un système de retry dans les workers', response: '', commentaire: '' },
-          { no: 5, question: 'Vérification des timeouts et durées d’expiration des jobs', response: '', commentaire: '' },
-          { no: 5, question: 'Validation avec métier', response: '', commentaire: '' }
-
-
+          { no: 4, question: 'Mise en place d\'un système de retry dans les workers', response: '', commentaire: '' },
+          { no: 5, question: 'Vérification des timeouts et durées d\'expiration des jobs', response: '', commentaire: '' },
+          { no: 6, question: 'Validation avec métier', response: '', commentaire: '' }
         ],
     };
     setAllAudits([...allAudits, newAudit]);
@@ -669,45 +668,127 @@ const AuditApp = () => {
   // ----------- MAIN UI -----------
 
   // --- Audit List
+  // const renderAuditsList = () => (
+  //   <div className="p-5 bg-white">
+  //     <div className="flex justify-between items-center mb-6">
+  //       <h2 className="text-2xl font-bold text-gray-800">Mes Audits</h2>
+  //       <button
+  //         onClick={createNewAudit}
+  //         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+  //       >
+  //         + Nouvel Audit
+  //       </button>
+  //     </div>
+  //     <div className="grid gap-4">
+  //       {allAudits.map(audit => (
+  //         <div
+  //           key={audit.id}
+  //           className="border border-gray-300 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+  //           onClick={() => selectAudit(audit)}
+  //         >
+  //           <div className="flex justify-between items-start mb-2">
+  //             <h3 className="text-lg font-semibold text-blue-700">{audit.title}</h3>
+  //             <span className={`px-3 py-1 rounded text-sm font-medium ${audit.status === 'Terminé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+  //               }`}>
+  //               {audit.status}
+  //             </span>
+  //           </div>
+  //           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
+  //             <div><strong>Auditeur:</strong> {audit.auditor}</div>
+  //             <div><strong>Date:</strong> {new Date(audit.date).toLocaleDateString('fr-FR')}</div>
+  //             <div><strong>Audité:</strong> {audit.auditee || 'Non défini'}</div>
+  //             <div><strong>Taux de conformités:</strong> {calculateProgress(audit.items, audit.technical)}%</div>
+  //           </div>
+  //           <div className="w-full bg-gray-200 rounded-full h-2">
+  //             <div
+  //               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+  //               style={{ width: `${calculateProgress(audit.items, audit.technical)}%` }}
+  //             ></div>
+  //           </div>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   </div>
+  // );
   const renderAuditsList = () => (
-    <div className="p-5 bg-white">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Mes Audits</h2>
-        <button
-          onClick={createNewAudit}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-        >
-          + Nouvel Audit
-        </button>
-      </div>
-      <div className="grid gap-4">
-        {allAudits.map(audit => (
-          <div
-            key={audit.id}
-            className="border border-gray-300 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => selectAudit(audit)}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-semibold text-blue-700">{audit.title}</h3>
-              <span className={`px-3 py-1 rounded text-sm font-medium ${audit.status === 'Terminé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                {audit.status}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
-              <div><strong>Auditeur:</strong> {audit.auditor}</div>
-              <div><strong>Date:</strong> {new Date(audit.date).toLocaleDateString('fr-FR')}</div>
-              <div><strong>Audité:</strong> {audit.auditee || 'Non défini'}</div>
-              <div><strong>Taux de conformités:</strong> {calculateProgress(audit.items, audit.technical)}%</div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${calculateProgress(audit.items, audit.technical)}%` }}
-              ></div>
-            </div>
+    <div className="p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">Mes Audits</h2>
+            <p className="text-gray-600">Liste de tous vos audits en cours et terminés</p>
           </div>
-        ))}
+          <button
+            onClick={createNewAudit}
+            className="flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Nouvel Audit
+          </button>
+        </div>
+  
+        {/* Audit Cards Grid */}
+        <div className="grid gap-6">
+          {allAudits.map(audit => (
+            <div
+              key={audit.id}
+              className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+              onClick={() => selectAudit(audit)}
+            >
+              <div className="p-6">
+                {/* Header with title and status */}
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                    {audit.title}
+                  </h3>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    audit.status === 'Terminé' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {audit.status}
+                  </span>
+                </div>
+  
+                {/* Audit Metadata */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-700 mb-4">
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-2 text-blue-500" />
+                    <span><strong className="text-gray-600">Auditeur:</strong> {audit.auditor}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                    <span><strong className="text-gray-600">Date:</strong> {new Date(audit.date).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <UserCheck className="w-4 h-4 mr-2 text-blue-500" />
+                    <span><strong className="text-gray-600">Audité:</strong> {audit.auditee || 'Non défini'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Gauge className="w-4 h-4 mr-2 text-blue-500" />
+                    <span><strong className="text-gray-600">Conformité:</strong> {calculateProgress(audit.items, audit.technical)}%</span>
+                  </div>
+                </div>
+  
+                {/* Progress Bar */}
+                <div className="mt-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <span>Progression</span>
+                    <span>{calculateProgress(audit.items, audit.technical)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${calculateProgress(audit.items, audit.technical)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -917,7 +998,7 @@ const AuditApp = () => {
       <div className="bg-gray-200 relative px-3 py-1 border-b border-gray-300 h-10 flex items-center">
         {/* Centered Name and Icon */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-blue-700 font-bold flex items-center gap-2">
-          MOHAMED ALI FRADI <span>👤</span>
+          AHMED AZIZ ELJ <span>👤</span>
         </div>
 
         {/* Right Logo */}
@@ -929,18 +1010,22 @@ const AuditApp = () => {
 
 
       {/* Navigation Bar */}
-      <div className="bg-blue-700 flex justify-between items-center text-white sticky top-0 z-30 px-4">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 flex justify-between items-center text-white sticky top-0 z-30 px-6 shadow-lg rounded-b-2xl h-16">
         {/* Left Logo */}
         <div className="flex items-center">
           <img src={imageAmaris} alt="Amaris Logo" className="h-8 mr-4" />
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex">
+        <div className="flex h-full">
           {['quiter', 'demarrer', 'audits', 'actions', 'planning', 'reporting'].map((tab) => (
             <div
               key={tab}
-              className={`px-5 py-3 cursor-pointer border-r border-blue-800 transition-colors hover:bg-blue-800 ${activeTab === tab ? 'bg-blue-800' : ''}`}
+              className={`
+                px-5 h-full flex items-center cursor-pointer border-r border-blue-500/30 
+                transition-all duration-200 hover:bg-blue-700/50 font-medium
+                ${activeTab === tab ? 'bg-blue-700/80 shadow-inner' : ''}
+              `}
               onClick={() => {
                 setActiveTab(tab);
                 if (tab === 'quiter') {
@@ -971,40 +1056,69 @@ const AuditApp = () => {
 
       {/* Audit Info Bar */}
       {currentAudit && activeTab === 'audits' && viewMode === 'editor' && (
-        <div className="bg-blue-500 text-white px-5 py-2 text-sm flex items-center justify-between">
-          <div>
-            {currentAudit.title} | Auditeur : {currentAudit.auditor} | Audité : {currentAudit.auditee || 'Non défini'} | Taux de conformités : {calculateProgress(currentAudit.items, currentAudit.technical)}% | Statut : {currentAudit.status}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 text-sm flex items-center justify-between rounded-t-lg shadow-md">
+        <div className="flex items-center space-x-6 font-medium">
+          <div className="flex items-center">
+            <FileText className="w-4 h-4 mr-2 text-blue-200" />
+            <span className="text-white">{currentAudit.title}</span>
           </div>
-          <img src={imageAmaris} alt="Logo Amaris" className="h-6 ml-4" />
+          
+          <div className="flex items-center">
+            <User className="w-4 h-4 mr-2 text-blue-200" />
+            <span>Auditeur: {currentAudit.auditor}</span>
+          </div>
+          
+          <div className="flex items-center">
+            <UserCheck className="w-4 h-4 mr-2 text-blue-200" />
+            <span>Audité: {currentAudit.auditee || 'Non défini'}</span>
+          </div>
+          
+          <div className="flex items-center">
+            <Gauge className="w-4 h-4 mr-2 text-blue-200" />
+            <span>Taux de conformité: {calculateProgress(currentAudit.items, currentAudit.technical)}%</span>
+          </div>
+          
+          <div className="flex items-center">
+            <BadgeInfo className="w-4 h-4 mr-2 text-blue-200" />
+            <span>Statut: {currentAudit.status}</span>
+          </div>
         </div>
-
-      )}
+        
+        <div className="flex items-center">
+          <img src={imageAmaris} alt="Logo Amaris" className="h-6 opacity-90 hover:opacity-100 transition-opacity" />
+        </div>
+      </div>
+)}
 
       {/* Action Buttons */}
       {currentAudit && activeTab === 'audits' && viewMode === 'editor' && (
-        <div className="bg-gray-100 px-5 py-2 flex justify-center gap-3 border-b border-gray-300">
+       
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-3 flex justify-center gap-4 border-b border-gray-200 shadow-sm">
           <button
-            className="px-3 py-1 border border-gray-400 bg-white cursor-pointer rounded text-xs hover:bg-gray-50 transition-colors"
+            className="flex items-center px-4 py-2 bg-white rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm"
             onClick={goBackToList}
           >
-            ← Liste des audits
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Liste des audits
           </button>
           <button
-            className="px-3 py-1 border border-gray-400 bg-white cursor-pointer rounded text-xs hover:bg-gray-50 transition-colors"
+            className="flex items-center px-4 py-2 bg-white rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm"
             onClick={printAudit}
           >
+            <Printer className="w-4 h-4 mr-2" />
             Imprimer
           </button>
           <button
-            className="px-3 py-1 border border-gray-400 bg-white cursor-pointer rounded text-xs hover:bg-gray-50 transition-colors"
-            onClick={terminateAudit}
+            className="flex items-center px-4 py-2 bg-white rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm"
           >
+            <CheckCircle className="w-4 h-4 mr-2" />
             Terminer
           </button>
           <button
-            className="px-3 py-1 border border-gray-400 bg-white cursor-pointer rounded text-xs hover:bg-gray-50 transition-colors"
+            className="flex items-center px-4 py-2 bg-white rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm"
             onClick={deleteAudit}
           >
+            <Trash2 className="w-4 h-4 mr-2" />
             Supprimer
           </button>
         </div>
