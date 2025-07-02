@@ -434,20 +434,32 @@ const AuditApp = () => {
   };
 
   // ----------- DECISION/COMMENT BAR -----------
-  const setResponse = (response) => {
-    if (!currentAudit || selectedRow.index === null) return;
-    let updatedAudit = { ...currentAudit };
-    if (selectedRow.table === 'model') {
-      updatedAudit.items = updatedAudit.items.map((item, i) =>
-        i === selectedRow.index ? { ...item, response } : item
-      );
-    } else {
-      updatedAudit.technical = updatedAudit.technical.map((item, i) =>
-        i === selectedRow.index ? { ...item, response } : item
-      );
-    }
-    updateCurrentAudit(updatedAudit);
-  };
+
+const setResponse = (response) => {
+  if (!currentAudit || selectedRow.index === null) return;
+
+  let updatedAudit = { ...currentAudit };
+
+  if (selectedRow.table === 'model') {
+    updatedAudit.items = updatedAudit.items.map((item, i) =>
+      i === selectedRow.index ? { ...item, response } : item
+    );
+  } else {
+    updatedAudit.technical = updatedAudit.technical.map((item, i) =>
+      i === selectedRow.index ? { ...item, response } : item
+    );
+  }
+
+  updateCurrentAudit(updatedAudit);
+
+  const { index, table } = selectedRow;
+  const rows = table === 'model' ? updatedAudit.items : updatedAudit.technical;
+  const nextIndex = index + 1;
+
+  if (nextIndex < rows.length) {
+    setSelectedRow({ index: nextIndex, table });
+  }
+};
 
   const updateComment = (table, index, newComment) => {
     let updatedAudit = { ...currentAudit };
@@ -989,7 +1001,7 @@ const AuditApp = () => {
         <div className="pb-32" />
       </div>
     );
-  };
+  }; 
 
   // ----------- RENDER -----------
   return (
@@ -1002,15 +1014,12 @@ const AuditApp = () => {
         </div>
 
         {/* Right Logo */}
-        <div className="absolute right-3">
-          <img src={imageBouyeges} alt="Bouygues Logo" className="h-6" />
-        </div>
       </div>
 
 
 
       {/* Navigation Bar */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 flex justify-between items-center text-white sticky top-0 z-30 px-6 shadow-lg rounded-b-2xl h-16">
+      <div className="bg-white flex justify-between items-center text-blue-700 sticky top-0 z-30 px-6 shadow-lg rounded-b-2xl h-16">
         {/* Left Logo */}
         <div className="flex items-center">
           <img src={imageAmaris} alt="Amaris Logo" className="h-8 mr-4" />
@@ -1021,10 +1030,10 @@ const AuditApp = () => {
           {['quiter', 'demarrer', 'audits', 'actions', 'planning', 'reporting'].map((tab) => (
             <div
               key={tab}
-              className={`
-                px-5 h-full flex items-center cursor-pointer border-r border-blue-500/30 
-                transition-all duration-200 hover:bg-blue-700/50 font-medium
-                ${activeTab === tab ? 'bg-blue-700/80 shadow-inner' : ''}
+              className={` 
+              px-5 h-full flex items-center cursor-pointer
+              transition-all duration-200 hover:bg-blue-100 font-medium
+              ${activeTab === tab ? 'bg-blue-200 shadow-inner font-semibold' : ''}
               `}
               onClick={() => {
                 setActiveTab(tab);
@@ -1048,9 +1057,9 @@ const AuditApp = () => {
             </div>
           ))}
         </div>
-
-        <div className="flex items-center">
-        </div>
+          <div className="flex items-center">
+          <img src={imageBouyeges} alt="Amaris Logo" className="h-8" />
+          </div>
       </div>
 
 
