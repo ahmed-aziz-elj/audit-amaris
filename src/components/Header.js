@@ -15,7 +15,7 @@ const Header = ({
     <>
       <div className="bg-gray-200 relative px-3 py-1 border-b border-gray-300 h-10 flex items-center">
         <div className="absolute left-1/2 transform -translate-x-1/2 text-blue-700 font-bold flex items-center gap-2">
-          MOHAMED ALI FRADI <span>👤</span>
+          AHMED AZIZ ELJ <span>👤</span>
         </div>
         <div className="absolute right-3">
           <img src={imageBouyeges} alt="Bouygues Logo" className="h-6" />
