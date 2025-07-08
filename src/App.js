@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState , useEffect } from 'react';
 import imageAmaris from './assets/image-amaris.png';
 import imageBouyeges from './assets/image-bouygues.png';
-import lockIcon from './assets/lock.png';
-import { CheckCircle, User, Building, Settings, ArrowRight, 
+import { CheckCircle, User, 
   Calendar, Plus, FileText, ArrowLeft, Printer, Trash2, 
   UserCheck, Gauge, BadgeInfo } from 'lucide-react';
-
+import { keycloak, initKeycloak } from './components/keycloakService';
 
 const AuditApp = () => {
   // ----------- AUTH STATE -----------
@@ -16,7 +15,7 @@ const AuditApp = () => {
   const [setupMode, setSetupMode] = useState(false);
   const [setupData, setSetupData] = useState({ auditee: '', type: '', department: '' });
   const [activeTab, setActiveTab] = useState('audits');
-  const [selectedRow, setSelectedRow] = useState({ table: 'model', index: null }); // Table: 'model' or 'tech'
+  const [selectedRow, setSelectedRow] = useState({ table: 'model', index: null });
   const [editingComment, setEditingComment] = useState({ table: null, index: null });
   const [, setCurrentAuditId] = useState(null);
   const [viewMode, setViewMode] = useState('list');
@@ -50,6 +49,12 @@ const AuditApp = () => {
     }
   ]);
   const [currentAudit, setCurrentAudit] = useState(null);
+  // ----------- KEYCLOAK AUTH STATE -----------
+  const [keycloakInitialized, setKeycloakInitialized] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  // Stocke les informations de l'utilisateur connecté
+  const [userInfo, setUserInfo] = useState(null);
   const departments = [
     "DI FTTA",
     "DI ZTD",
@@ -74,13 +79,61 @@ const AuditApp = () => {
     "Transverse"
   ]
 
-  // ----------- LOGIN INTERFACE -----------
+ // ----------- KEYCLOAK INITIALIZATION -----------
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const authenticated = await initKeycloak();
+        setAuthenticated(authenticated);
+        setKeycloakInitialized(true);
+        if (authenticated) {
+          const profile = await keycloak.loadUserProfile();
+          setUserInfo(profile);
+        }
+        console.log('Keycloak initialized, authenticated:', authenticated);
+      } catch (err) {
+        console.error('Keycloak initialization failed:', err);
+      } finally {
+        setLoading(false);
+        console.log('Keycloak loading finished');
+      }
+    };
+    init();
+
+    const tokenRefreshInterval = setInterval(() => {
+      if (keycloak.authenticated) {
+        keycloak.updateToken(30).catch(() => {
+          console.error('Failed to refresh token');
+          keycloak.login();
+        });
+      }
+    }, 60000);
+
+    return () => clearInterval(tokenRefreshInterval);
+  }, []);
+
+  useEffect(() => {
+    if (keycloakInitialized && !authenticated && !loading) {
+      keycloak.login();
+    }
+  }, [keycloakInitialized, authenticated, loading]);
+
+    // ----------- AUTH HANDLERS -----------
+  const handleLogin = () => {
+    keycloak.login();
+  };
+
+  const handleLogout = () => {
+    keycloak.logout();
+  };
+
   const completeAuditSetup = () => {
     const newId = Math.max(...allAudits.map(a => a.id), 0) + 1;
+    const auditorName = userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Utilisateur';
     const newAudit = {
       id: newId,
       title: `AUDIT ${String(newId).padStart(5, '0')}`,
-      auditor: 'AHMED AZIZ ELJ',
+      auditor: auditorName,
       auditee: '',
       date: new Date().toISOString().split('T')[0],
       status: 'En cours',
@@ -126,285 +179,213 @@ const AuditApp = () => {
     setSetupMode(false);
 
     };
-  if (!loggedIn) {
+
+  // ----------- LOADING SCREEN -----------
+  if (loading) {
     return (
-  <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-full max-w-md">
-      
-      <div className="p-8">
-        {/* Top Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={imageAmaris} alt="Logo Amaris" className="h-16 object-contain" />
-        </div>
-
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            AMARIS-AuditApp
-          </h2>
-          <p className="text-sm text-gray-500">Connectez-vous à votre compte</p>
-        </div>
-
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            setLoggedIn(true);
-          }}
-          className="space-y-6"
-        >
-          {/* Login Field */}
-          <div className="relative">
-            <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-              <span className="w-4 h-4 mr-2 text-blue-600 font-bold">👤</span>
-              Login
-            </label>
-            <div className="relative">
-              <input
-                className="w-full p-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
-                type="text"
-                autoComplete="username"
-                value={loginData.login}
-                onChange={e => setLoginData(d => ({ ...d, login: e.target.value }))}
-                placeholder="Nom d'utilisateur"
-                required
-              />
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
-              {loginData.login && (
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <span className="text-green-500 text-lg">✓</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Password Field */}
-          <div className="relative">
-            <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-              <img src={lockIcon} alt="Lock" className="w-4 h-4 mr-2 opacity-70" />
-              Mot de passe
-            </label>
-            <div className="relative">
-              <input
-                className="w-full p-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
-                type="password"
-                autoComplete="current-password"
-                value={loginData.password}
-                onChange={e => setLoginData(d => ({ ...d, password: e.target.value }))}
-                placeholder="Mot de passe"
-                required
-              />
-              <img src={lockIcon} alt="Lock" className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-40" />
-
-              {loginData.password && (
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <span className="text-green-500 text-lg">✓</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="pt-4">
-            <button
-              className="w-full flex items-center justify-center px-8 py-4 rounded-xl font-semibold transition-all duration-200 transform bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl"
-              type="submit"
-            >
-              Se connecter
-              <span className="ml-2">→</span>
-            </button>
-          </div>
-        </form>
-
-        {/* Bottom Logo */}
-        <div className="flex justify-center mt-8 pt-6 border-t border-gray-100">
-          <img src={imageBouyeges} alt="Logo Bouygues" className="h-12 object-contain opacity-70" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-xl text-blue-700 font-bold">Chargement...</div>
         </div>
       </div>
-    </div>
-  </div>
-);
+    );
+  }
 
-  } else if (setupMode) {
-      const isFormValid = setupData.type && setupData.department;
-     return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6 flex items-center justify-center">
-      <div className="w-full max-w-2xl">
-        {/* Header Section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-4 shadow-lg">
-            <span className="text-white text-2xl font-bold">✓</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Initialiser un Nouvel Audit
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Configurez les paramètres de votre audit en quelques étapes simples
-          </p>
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-xl text-blue-700 font-bold">Chargement...</div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Main Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Progress Bar */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-1">
-            <div 
-              className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all duration-500 ease-out"
-              style={{ width: `${(Object.values(setupData).filter(v => v).length / 3) * 100}%` }}
-            />
+  // ----------- SETUP MODE -----------
+  if (setupMode) {
+    const isFormValid = setupData.type && setupData.department;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6 flex items-center justify-center">
+        <div className="w-full max-w-2xl">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-4 shadow-lg">
+              <span className="text-white text-2xl font-bold">✓</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Initialiser un Nouvel Audit
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Configurez les paramètres de votre audit en quelques étapes simples
+            </p>
           </div>
 
-          <div className="p-8">
-            <div className="space-y-8">
-              {/* Auditee Section */}
-              <div className="relative">
-                <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold">👤</span>
-                  Audité
-                </label>
+          {/* Main Form Card */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            {/* Progress Bar */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-1">
+              <div 
+                className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all duration-500 ease-out"
+                style={{ width: `${(Object.values(setupData).filter(v => v).length / 3) * 100}%` }}
+              />
+            </div>
+
+            <div className="p-8">
+              <div className="space-y-8">
+                {/* Auditee Section */}
                 <div className="relative">
-                  <select
-                    value={setupData.auditee}
-                    onChange={e => setSetupData({ ...setupData, auditee: e.target.value })}
-                    className="w-full p-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium cursor-not-allowed"
-                    disabled
-                  >
-                    <option value="Ayoub BEN KHIROUN">Ayoub BEN KHIROUN</option>
-                  </select>
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <span className="text-green-500 text-lg">✓</span>
+                  <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                    <span className="w-4 h-4 mr-2 text-blue-600 font-bold">👤</span>
+                    Audité
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Utilisateur connecté'}
+                      className="w-full p-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium cursor-not-allowed"
+                      disabled
+                    />
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <span className="text-green-500 text-lg">✓</span>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 pl-12">Audité par défaut</p>
-              </div>
 
-              {/* Domain Section */}
-              <div className="relative">
-                <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold">🏢</span>
-                  Domaine
-                </label>
+                {/* Domain Section */}
                 <div className="relative">
-                  <select
-                    value={setupData.type}
-                    onChange={e => setSetupData({ ...setupData, type: e.target.value })}
-                    className="w-full p-4 pl-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
-                  >
-                    <option value="">Sélectionnez le domaine</option>
-                    {domains.map(dom => (
-                      <option key={dom} value={dom}>{dom}</option>
-                    ))}
-                  </select>
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🏢</span>
+                  <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                    <span className="w-4 h-4 mr-2 text-blue-600 font-bold">🏢</span>
+                    Domaine
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={setupData.type}
+                      onChange={e => setSetupData({ ...setupData, type: e.target.value })}
+                      className="w-full p-4 pl-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
+                    >
+                      <option value="">Sélectionnez le domaine</option>
+                      {domains.map(dom => (
+                        <option key={dom} value={dom}>{dom}</option>
+                      ))}
+                    </select>
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🏢</span>
+                    {setupData.type && (
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <span className="text-green-500 text-lg">✓</span>
+                      </div>
+                    )}
+                  </div>
                   {setupData.type && (
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      <span className="text-green-500 text-lg">✓</span>
-                    </div>
+                    <p className="text-xs text-green-600 mt-2 pl-12 font-medium">
+                      ✓ Domaine sélectionné: {setupData.type}
+                    </p>
                   )}
                 </div>
-                {setupData.type && (
-                  <p className="text-xs text-green-600 mt-2 pl-12 font-medium">
-                    ✓ Domaine sélectionné: {setupData.type}
-                  </p>
-                )}
-              </div>
 
-              {/* Department Section */}
-              <div className="relative">
-                <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                  <span className="w-4 h-4 mr-2 text-blue-600 font-bold">⚙️</span>
-                  Processus
-                </label>
+                {/* Department Section */}
                 <div className="relative">
-                  <select
-                    value={setupData.department}
-                    onChange={e => setSetupData({ ...setupData, department: e.target.value })}
-                    className="w-full p-4 pl-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
-                  >
-                    <option value="">Sélectionnez le processus</option>
-                    {departments.map(dep => (
-                      <option key={dep} value={dep}>{dep}</option>
-                    ))}
-                  </select>
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">⚙️</span>
+                  <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                    <span className="w-4 h-4 mr-2 text-blue-600 font-bold">⚙️</span>
+                    Processus
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={setupData.department}
+                      onChange={e => setSetupData({ ...setupData, department: e.target.value })}
+                      className="w-full p-4 pl-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 font-medium hover:border-blue-300"
+                    >
+                      <option value="">Sélectionnez le processus</option>
+                      {departments.map(dep => (
+                        <option key={dep} value={dep}>{dep}</option>
+                      ))}
+                    </select>
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">⚙️</span>
+                    {setupData.department && (
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <span className="text-green-500 text-lg">✓</span>
+                      </div>
+                    )}
+                  </div>
                   {setupData.department && (
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      <span className="text-green-500 text-lg">✓</span>
-                    </div>
+                    <p className="text-xs text-green-600 mt-2 pl-12 font-medium">
+                      ✓ Processus sélectionné: {setupData.department}
+                    </p>
                   )}
                 </div>
-                {setupData.department && (
-                  <p className="text-xs text-green-600 mt-2 pl-12 font-medium">
-                    ✓ Processus sélectionné: {setupData.department}
+              </div>
+
+              {/* Action Section */}
+              <div className="mt-10 pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    {isFormValid ? (
+                      <span className="flex items-center text-green-600 font-medium">
+                        <span className="mr-1">✓</span>
+                        Prêt à continuer
+                      </span>
+                    ) : (
+                      <span>Veuillez remplir tous les champs requis</span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={cancelStartAudit}
+                      className="flex items-center px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg border border-gray-300"
+                    >
+                      <span className="mr-2">✕</span>
+                      Annuler
+                    </button>
+
+                    <button
+                      disabled={!isFormValid}
+                      onClick={completeAuditSetup}
+                      className={`
+                        flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform
+                        ${isFormValid 
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl' 
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }
+                      `}
+                    >
+                      Continuer
+                      <span className="ml-2">→</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Summary Card */}
+          {isFormValid && (
+            <div className="mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+              <h3 className="font-semibold text-gray-900 mb-3">Résumé de l'audit</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Audité:</span>
+                  <p className="font-medium text-gray-900">
+                    {userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Utilisateur connecté'}
                   </p>
-                )}
-              </div>
-            </div>
-
-            {/* Action Section */}
-            <div className="mt-10 pt-6 border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  {isFormValid ? (
-                    <span className="flex items-center text-green-600 font-medium">
-                      <span className="mr-1">✓</span>
-                      Prêt à continuer
-                    </span>
-                  ) : (
-                    <span>Veuillez remplir tous les champs requis</span>
-                  )}
                 </div>
-                
-                <div className="flex items-center gap-4">
-                 <button
-                  onClick={cancelStartAudit}
-                  className="flex items-center px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg border border-gray-300"
-                >
-                <span className="mr-2">✕</span>
-                   Annuler
-                 </button>
-
-              <button
-              disabled={!isFormValid}
-              onClick={completeAuditSetup}
-              className={`
-              flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform
-              ${isFormValid 
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl' 
-               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-               }
-             `}
-            >
-                  Continuer
-                   <span className="ml-2">→</span>
-                  </button>
+                <div>
+                  <span className="text-gray-600">Domaine:</span>
+                  <p className="font-medium text-gray-900">{setupData.type}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600">Processus:</span>
+                  <p className="font-medium text-gray-900">{setupData.department}</p>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* Summary Card */}
-        {isFormValid && (
-          <div className="mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
-            <h3 className="font-semibold text-gray-900 mb-3">Résumé de l'audit</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Audité:</span>
-                <p className="font-medium text-gray-900">{setupData.auditee}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Domaine:</span>
-                <p className="font-medium text-gray-900">{setupData.type}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Processus:</span>
-                <p className="font-medium text-gray-900">{setupData.department}</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
-  );
+    );
   }
 
   // ----------- PROGRESS CALC -----------
@@ -458,6 +439,13 @@ const setResponse = (response) => {
 
   if (nextIndex < rows.length) {
     setSelectedRow({ index: nextIndex, table });
+  } else {
+    // Only move to the next table if coming from 'model'
+    if (table === 'model' && updatedAudit.technical.length > 0) {
+      setSelectedRow({ index: 0, table: 'tech' });
+    } else {
+      setSelectedRow({ index: null, table: null }); // No more rows
+    }
   }
 };
 
@@ -677,51 +665,6 @@ const setResponse = (response) => {
     }
   };
 
-  // ----------- MAIN UI -----------
-
-  // --- Audit List
-  // const renderAuditsList = () => (
-  //   <div className="p-5 bg-white">
-  //     <div className="flex justify-between items-center mb-6">
-  //       <h2 className="text-2xl font-bold text-gray-800">Mes Audits</h2>
-  //       <button
-  //         onClick={createNewAudit}
-  //         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-  //       >
-  //         + Nouvel Audit
-  //       </button>
-  //     </div>
-  //     <div className="grid gap-4">
-  //       {allAudits.map(audit => (
-  //         <div
-  //           key={audit.id}
-  //           className="border border-gray-300 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-  //           onClick={() => selectAudit(audit)}
-  //         >
-  //           <div className="flex justify-between items-start mb-2">
-  //             <h3 className="text-lg font-semibold text-blue-700">{audit.title}</h3>
-  //             <span className={`px-3 py-1 rounded text-sm font-medium ${audit.status === 'Terminé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-  //               }`}>
-  //               {audit.status}
-  //             </span>
-  //           </div>
-  //           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
-  //             <div><strong>Auditeur:</strong> {audit.auditor}</div>
-  //             <div><strong>Date:</strong> {new Date(audit.date).toLocaleDateString('fr-FR')}</div>
-  //             <div><strong>Audité:</strong> {audit.auditee || 'Non défini'}</div>
-  //             <div><strong>Taux de conformités:</strong> {calculateProgress(audit.items, audit.technical)}%</div>
-  //           </div>
-  //           <div className="w-full bg-gray-200 rounded-full h-2">
-  //             <div
-  //               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-  //               style={{ width: `${calculateProgress(audit.items, audit.technical)}%` }}
-  //             ></div>
-  //           </div>
-  //         </div>
-  //       ))}
-  //     </div>
-  //   </div>
-  // );
   const renderAuditsList = () => (
     <div className="p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
@@ -1010,7 +953,7 @@ const setResponse = (response) => {
       <div className="bg-gray-200 relative px-3 py-1 border-b border-gray-300 h-10 flex items-center">
         {/* Centered Name and Icon */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-blue-700 font-bold flex items-center gap-2">
-          AHMED AZIZ ELJ <span>👤</span>
+          {userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Utilisateur'} <span>👤</span>
         </div>
 
         {/* Right Logo */}
@@ -1040,6 +983,7 @@ const setResponse = (response) => {
                 if (tab === 'quiter') {
                   if (window.confirm('Êtes-vous sûr de vouloir quitter?')) {
                     setLoggedIn(false);
+                    handleLogout();
                     setActiveTab('audits');
                   }
                 } else if (tab === 'demarrer') {
