@@ -397,8 +397,12 @@ const AuditApp = () => {
     return totalQuestions > 0 ? Math.round((OK_Response / totalQuestions) * 100) : 0;
   };
 
+  // ----------- GROUP + ROLE CHECK -----------
+  const isDevConsult = keycloak.hasRealmRole('audit:consult');
+
   // ----------- AUDIT CRUD -----------
   const createNewAudit = () => {
+    if (isDevConsult) return;
     setSetupMode(true);
   };
 
@@ -676,7 +680,9 @@ const setResponse = (response) => {
           </div>
           <button
             onClick={createNewAudit}
-            className="flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+            disabled={isDevConsult}
+            className={`flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${isDevConsult ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={isDevConsult ? "Accès réservé aux TL et CDP" : "Créer un nouvel audit"}
           >
             <Plus className="w-5 h-5 mr-2" />
             Nouvel Audit
@@ -977,8 +983,10 @@ const setResponse = (response) => {
               px-5 h-full flex items-center cursor-pointer
               transition-all duration-200 hover:bg-blue-100 font-medium
               ${activeTab === tab ? 'bg-blue-200 shadow-inner font-semibold' : ''}
+              ${tab === 'demarrer' && isDevConsult ? 'opacity-50 cursor-not-allowed' : ''}
               `}
               onClick={() => {
+                if (tab === 'demarrer' && isDevConsult) return;
                 setActiveTab(tab);
                 if (tab === 'quiter') {
                   if (window.confirm('Êtes-vous sûr de vouloir quitter?')) {
@@ -994,6 +1002,7 @@ const setResponse = (response) => {
                   setCurrentAuditId(null);
                 }
               }}
+              title={tab === 'demarrer' && isDevConsult ? 'Accès réservé aux TL et CDP' : undefined}
             >
               {tab === 'quiter' ? 'Quiter' :
                 tab === 'demarrer' ? 'Démarrer AUDIT' :
