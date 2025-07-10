@@ -99,7 +99,6 @@ const AuditApp = () => {
       }
     };
     init();
-
     const tokenRefreshInterval = setInterval(() => {
       if (keycloak.authenticated) {
         keycloak.updateToken(30).catch(() => {
