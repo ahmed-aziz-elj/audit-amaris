@@ -2,7 +2,7 @@
   "name": "audit-amaris",
   "version": "0.1.1-v0",
   "private": true,
-  "homepage": "/",
+  "homepage": "https://ahmed-aziz-elj.github.io/audit-amaris",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
