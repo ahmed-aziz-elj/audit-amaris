@@ -19,7 +19,7 @@ const AuditApp = () => {
   const [loginData, setLoginData] = useState({ login: '', password: '' });
 
   // ----------- MAIN APP STATE -----------
-  const [setupMode, setSetupMode] = useState(true);
+  const [setupMode, setSetupMode] = useState(false);
   const [setupData, setSetupData] = useState({ auditee: '', type: '', department: '' });
   const [activeTab, setActiveTab] = useState('audits');
   const [selectedRow, setSelectedRow] = useState({ table: 'model', index: null });
@@ -87,41 +87,41 @@ const AuditApp = () => {
   ]
 
  // ----------- KEYCLOAK INITIALIZATION -----------
-  // useEffect(() => {
-  //   const init = async () => {
-  //     try {
-  //       const authenticated = await initKeycloak();
-  //       setAuthenticated(authenticated);
-  //       setKeycloakInitialized(true);
-  //       if (authenticated) {
-  //         const profile = await keycloak.loadUserProfile();
-  //         setUserInfo(profile);
-  //       }
-  //       console.log('Keycloak initialized, authenticated:', authenticated);
-  //     } catch (err) {
-  //       console.error('Keycloak initialization failed:', err);
-  //     } finally {
-  //       setLoading(false);
-  //       console.log('Keycloak loading finished');
-  //     }
-  //   };
-  //   init();
-  //   const tokenRefreshInterval = setInterval(() => {
-  //     if (keycloak.authenticated) {
-  //       keycloak.updateToken(30).catch(() => {
-  //         console.error('Failed to refresh token');
-  //         keycloak.login();
-  //       });
-  //     }
-  //   }, 60000);
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const authenticated = await initKeycloak();
+        setAuthenticated(authenticated);
+        setKeycloakInitialized(true);
+        if (authenticated) {
+          const profile = await keycloak.loadUserProfile();
+          setUserInfo(profile);
+        }
+        console.log('Keycloak initialized, authenticated:', authenticated);
+      } catch (err) {
+        console.error('Keycloak initialization failed:', err);
+      } finally {
+        setLoading(false);
+        console.log('Keycloak loading finished');
+      }
+    };
+    init();
+    const tokenRefreshInterval = setInterval(() => {
+      if (keycloak.authenticated) {
+        keycloak.updateToken(30).catch(() => {
+          console.error('Failed to refresh token');
+          keycloak.login();
+        });
+      }
+    }, 60000);
 
-  //   return () => clearInterval(tokenRefreshInterval);
-  // }, []);
+    return () => clearInterval(tokenRefreshInterval);
+  }, []);
 
   useEffect(() => {
-    // if (true) {
-    //   keycloak.login();
-    // }
+    if (true) {
+      keycloak.login();
+    }
   }, [keycloakInitialized, authenticated, loading]);
 
     // ----------- AUTH HANDLERS -----------
@@ -187,27 +187,27 @@ const AuditApp = () => {
     };
 
   // ----------- LOADING SCREEN -----------
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-  //       <div className="flex flex-col items-center">
-  //         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-  //         <div className="text-xl text-blue-700 font-bold">Chargement...</div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-xl text-blue-700 font-bold">Chargement...</div>
+        </div>
+      </div>
+    );
+  }
 
-  // if (!authenticated) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-  //       <div className="flex flex-col items-center">
-  //         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-  //         <div className="text-xl text-blue-700 font-bold">Chargement...</div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-xl text-blue-700 font-bold">Chargement...</div>
+        </div>
+      </div>
+    );
+  }
 
   // ----------- SETUP MODE -----------
   if (setupMode) {
